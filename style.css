@@ -1,0 +1,51 @@
+* {
+  box-sizing: border-box;
+  user-select: none;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Toolbar */
+#toolbar {
+  padding: 10px;
+  background: #eaeaea;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Editor Layout */
+#editor {
+  height: calc(100vh - 50px);
+}
+
+/* Canvas */
+#canvas {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: #f9f9f9;
+  border: 2px solid #ccc;
+  overflow: hidden;
+}
+
+/* Elements */
+.element {
+  position: absolute;
+  cursor: move;
+}
+
+.rectangle {
+  background: #cce;
+}
+
+.text {
+  background: #eef;
+  padding: 6px;
+}
+
+/* Selected Element */
+.selected {
+  outline: 2px solid blue;
+}
