@@ -2,6 +2,21 @@ const canvas = document.getElementById("canvas");
 const addRectBtn = document.getElementById("add-rect");
 const addTextBtn = document.getElementById("add-text");
 
+const propWidth = document.getElementById("prop-width");
+const propHeight = document.getElementById("prop-height");
+const propBg = document.getElementById("prop-bg");
+const propText = document.getElementById("prop-text");
+const propTextColor = document.getElementById("prop-text-color");
+
+const textProp = document.getElementById("text-prop");
+const textColorProp = document.getElementById("text-color-prop");
+
+/* ------------------ LIMITS ------------------ */
+const MIN_WIDTH = 30;
+const MAX_WIDTH = 600;
+const MIN_HEIGHT = 30;
+const MAX_HEIGHT = 600;
+
 /* ------------------ CENTRAL STATE ------------------ */
 const state = {
   elements: [],
@@ -11,13 +26,8 @@ const state = {
 let idCounter = 1;
 
 /* ------------------ ELEMENT CREATION ------------------ */
-addRectBtn.addEventListener("click", () => {
-  createElement("rect");
-});
-
-addTextBtn.addEventListener("click", () => {
-  createElement("text");
-});
+addRectBtn.addEventListener("click", () => createElement("rect"));
+addTextBtn.addEventListener("click", () => createElement("text"));
 
 function createElement(type) {
   const id = "el_" + idCounter++;
@@ -32,6 +42,7 @@ function createElement(type) {
     rotation: 0,
     styles: {
       backgroundColor: type === "rect" ? "#cce" : "#eef",
+      color: "#000000",
     },
     text: type === "text" ? "Text" : "",
   };
@@ -41,7 +52,7 @@ function createElement(type) {
   selectElement(id);
 }
 
-/* ------------------ RENDER ELEMENT ------------------ */
+/* ------------------ RENDER ------------------ */
 function renderElement(data) {
   const el = document.createElement("div");
   el.classList.add("element");
@@ -50,6 +61,7 @@ function renderElement(data) {
   if (data.type === "text") {
     el.classList.add("text");
     el.textContent = data.text;
+    el.style.color = data.styles.color;
   }
 
   el.dataset.id = data.id;
@@ -64,7 +76,7 @@ function renderElement(data) {
   canvas.appendChild(el);
 }
 
-/* ------------------ UPDATE STYLE ------------------ */
+/* ------------------ STYLE UPDATE ------------------ */
 function updateElementStyle(el, data) {
   el.style.left = data.x + "px";
   el.style.top = data.y + "px";
@@ -72,31 +84,70 @@ function updateElementStyle(el, data) {
   el.style.height = data.height + "px";
   el.style.backgroundColor = data.styles.backgroundColor;
   el.style.transform = `rotate(${data.rotation}deg)`;
+
+  if (data.type === "text") {
+    el.style.color = data.styles.color;
+  }
 }
 
-/* ------------------ SELECTION LOGIC ------------------ */
+/* ------------------ SELECTION ------------------ */
 function selectElement(id) {
   state.selectedId = id;
+  updatePropertiesPanel();
 
   document.querySelectorAll(".element").forEach((el) => {
     el.classList.remove("selected");
+    removeHandles(el);
   });
 
   const selectedEl = document.querySelector(`.element[data-id="${id}"]`);
   if (selectedEl) {
     selectedEl.classList.add("selected");
+    addHandles(selectedEl);
   }
 }
 
-/* Deselect on canvas click */
+/* ------------------ HANDLES ------------------ */
+function addHandles(el) {
+  ["tl", "tr", "bl", "br"].forEach((pos) => {
+    const handle = document.createElement("div");
+    handle.classList.add("resize-handle", pos);
+
+    handle.addEventListener("mousedown", (e) => {
+      e.stopPropagation();
+      startResize(e, el, pos);
+    });
+
+    el.appendChild(handle);
+  });
+
+  const rotate = document.createElement("div");
+  rotate.classList.add("rotate-handle");
+
+  rotate.addEventListener("mousedown", (e) => {
+    e.stopPropagation();
+    startRotate(e, el);
+  });
+
+  el.appendChild(rotate);
+}
+
+function removeHandles(el) {
+  el.querySelectorAll(".resize-handle, .rotate-handle").forEach((h) =>
+    h.remove(),
+  );
+}
+
+/* ------------------ DESELECT ------------------ */
 canvas.addEventListener("mousedown", () => {
   state.selectedId = null;
   document.querySelectorAll(".element").forEach((el) => {
     el.classList.remove("selected");
+    removeHandles(el);
   });
 });
 
-/* ------------------ DRAGGING ------------------ */
+/* ------------------ DRAG ------------------ */
 let dragInfo = null;
 
 function startDrag(e, el, data) {
@@ -122,7 +173,6 @@ function onDrag(e) {
   let newX = dragInfo.origX + dx;
   let newY = dragInfo.origY + dy;
 
-  /* Canvas boundary constraint */
   newX = Math.max(0, Math.min(newX, canvas.clientWidth - dragInfo.data.width));
   newY = Math.max(
     0,
@@ -140,3 +190,233 @@ function stopDrag() {
   document.removeEventListener("mousemove", onDrag);
   document.removeEventListener("mouseup", stopDrag);
 }
+
+/* ------------------ SMART RESIZE ------------------ */
+let resizeInfo = null;
+
+function startResize(e, el, position) {
+  const data = state.elements.find((d) => d.id === el.dataset.id);
+
+  resizeInfo = {
+    el,
+    data,
+    position,
+    startX: e.clientX,
+    startY: e.clientY,
+    startW: data.width,
+    startH: data.height,
+    startXPos: data.x,
+    startYPos: data.y,
+    originalRotation: data.rotation,
+  };
+
+  data.rotation = 0;
+  updateElementStyle(el, data);
+
+  document.addEventListener("mousemove", onResize);
+  document.addEventListener("mouseup", stopResize);
+}
+
+function onResize(e) {
+  if (!resizeInfo) return;
+
+  const dx = e.clientX - resizeInfo.startX;
+  const dy = e.clientY - resizeInfo.startY;
+
+  let { data, position } = resizeInfo;
+
+  let newW = resizeInfo.startW;
+  let newH = resizeInfo.startH;
+  let newX = resizeInfo.startXPos;
+  let newY = resizeInfo.startYPos;
+
+  if (position.includes("r")) newW += dx;
+  if (position.includes("l")) {
+    newW -= dx;
+    newX += dx;
+  }
+  if (position.includes("b")) newH += dy;
+  if (position.includes("t")) {
+    newH -= dy;
+    newY += dy;
+  }
+
+  data.width = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, newW));
+  data.height = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, newH));
+  data.x = newX;
+  data.y = newY;
+
+  updateElementStyle(resizeInfo.el, data);
+}
+
+function stopResize() {
+  if (!resizeInfo) return;
+
+  resizeInfo.data.rotation = resizeInfo.originalRotation;
+  updateElementStyle(resizeInfo.el, resizeInfo.data);
+
+  resizeInfo = null;
+  document.removeEventListener("mousemove", onResize);
+  document.removeEventListener("mouseup", stopResize);
+}
+
+/* ------------------ ROTATE ------------------ */
+let rotateInfo = null;
+
+function startRotate(e, el) {
+  const data = state.elements.find((d) => d.id === el.dataset.id);
+  const rect = el.getBoundingClientRect();
+
+  const centerX = rect.left + rect.width / 2;
+  const centerY = rect.top + rect.height / 2;
+
+  const dx = e.clientX - centerX;
+  const dy = e.clientY - centerY;
+
+  const mouseAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+
+  rotateInfo = {
+    el,
+    data,
+    centerX,
+    centerY,
+    offset: mouseAngle - data.rotation,
+  };
+
+  document.addEventListener("mousemove", onRotate);
+  document.addEventListener("mouseup", stopRotate);
+}
+
+function onRotate(e) {
+  if (!rotateInfo) return;
+
+  const dx = e.clientX - rotateInfo.centerX;
+  const dy = e.clientY - rotateInfo.centerY;
+
+  const mouseAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+  rotateInfo.data.rotation = mouseAngle - rotateInfo.offset;
+
+  updateElementStyle(rotateInfo.el, rotateInfo.data);
+}
+
+function stopRotate() {
+  rotateInfo = null;
+  document.removeEventListener("mousemove", onRotate);
+  document.removeEventListener("mouseup", stopRotate);
+}
+
+/* ------------------ KEYBOARD ------------------ */
+document.addEventListener("keydown", (e) => {
+  if (!state.selectedId) return;
+
+  const data = state.elements.find((el) => el.id === state.selectedId);
+  const el = document.querySelector(`.element[data-id="${state.selectedId}"]`);
+  if (!data || !el) return;
+
+  const step = 5;
+
+  switch (e.key) {
+    case "Delete":
+      el.remove();
+      state.elements = state.elements.filter((i) => i.id !== state.selectedId);
+      state.selectedId = null;
+      return;
+    case "ArrowUp":
+      data.y = Math.max(0, data.y - step);
+      break;
+    case "ArrowDown":
+      data.y = Math.min(canvas.clientHeight - data.height, data.y + step);
+      break;
+    case "ArrowLeft":
+      data.x = Math.max(0, data.x - step);
+      break;
+    case "ArrowRight":
+      data.x = Math.min(canvas.clientWidth - data.width, data.x + step);
+      break;
+    default:
+      return;
+  }
+
+  updateElementStyle(el, data);
+});
+
+/* ------------------ PROPERTIES PANEL ------------------ */
+function updatePropertiesPanel() {
+  if (!state.selectedId) return;
+
+  const data = state.elements.find((el) => el.id === state.selectedId);
+  if (!data) return;
+
+  propWidth.value = data.width;
+  propHeight.value = data.height;
+  propBg.value = data.styles.backgroundColor;
+
+  if (data.type === "text") {
+    textProp.style.display = "block";
+    textColorProp.style.display = "block";
+    propText.value = data.text;
+    propTextColor.value = data.styles.color;
+  } else {
+    textProp.style.display = "none";
+    textColorProp.style.display = "none";
+  }
+}
+
+propWidth.addEventListener("input", () => {
+  const data = state.elements.find((el) => el.id === state.selectedId);
+  if (!data) return;
+
+  data.width = Math.min(
+    MAX_WIDTH,
+    Math.max(MIN_WIDTH, Number(propWidth.value)),
+  );
+
+  updateElementStyle(
+    document.querySelector(`.element[data-id="${data.id}"]`),
+    data,
+  );
+});
+
+propHeight.addEventListener("input", () => {
+  const data = state.elements.find((el) => el.id === state.selectedId);
+  if (!data) return;
+
+  data.height = Math.min(
+    MAX_HEIGHT,
+    Math.max(MIN_HEIGHT, Number(propHeight.value)),
+  );
+
+  updateElementStyle(
+    document.querySelector(`.element[data-id="${data.id}"]`),
+    data,
+  );
+});
+
+propBg.addEventListener("input", () => {
+  const data = state.elements.find((el) => el.id === state.selectedId);
+  if (!data) return;
+
+  data.styles.backgroundColor = propBg.value;
+  updateElementStyle(
+    document.querySelector(`.element[data-id="${data.id}"]`),
+    data,
+  );
+});
+
+propText.addEventListener("input", () => {
+  const data = state.elements.find((el) => el.id === state.selectedId);
+  if (!data || data.type !== "text") return;
+
+  data.text = propText.value;
+  document.querySelector(`.element[data-id="${data.id}"]`).textContent =
+    data.text;
+});
+
+propTextColor.addEventListener("input", () => {
+  const data = state.elements.find((el) => el.id === state.selectedId);
+  if (!data || data.type !== "text") return;
+
+  data.styles.color = propTextColor.value;
+  document.querySelector(`.element[data-id="${data.id}"]`).style.color =
+    data.styles.color;
+});

@@ -5,32 +5,102 @@
 
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: Inter, Arial, sans-serif;
+  background: #111;
+  color: #eee;
 }
 
-/* Toolbar */
-#toolbar {
-  padding: 10px;
-  background: #eaeaea;
-  border-bottom: 1px solid #ccc;
+/* ===== APP LAYOUT ===== */
+#app {
+  display: flex;
+  height: 100vh;
 }
 
-/* Editor Layout */
-#editor {
-  height: calc(100vh - 50px);
+/* ===== LEFT PANEL ===== */
+#layers-panel {
+  width: 240px;
+  background: #1c1c1c;
+  padding: 15px;
+  border-right: 1px solid #333;
 }
 
-/* Canvas */
-#canvas {
+#layers-panel h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+}
+
+.primary-btn,
+.secondary-btn {
   width: 100%;
-  height: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.primary-btn {
+  background: #f5c400;
+  color: #000;
+}
+
+.secondary-btn {
+  background: #2b2b2b;
+  color: #fff;
+}
+
+/* ===== CANVAS AREA ===== */
+#editor {
+  flex: 1;
+  background: #141414;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#canvas {
+  width: 90%;
+  height: 90%;
+  background: radial-gradient(#2a2a2a 1px, transparent 1px);
+  background-size: 20px 20px;
   position: relative;
-  background: #f9f9f9;
-  border: 2px solid #ccc;
+  border-radius: 8px;
   overflow: hidden;
 }
 
-/* Elements */
+/* ===== RIGHT PANEL ===== */
+#properties {
+  width: 260px;
+  background: #1c1c1c;
+  padding: 15px;
+  border-left: 1px solid #333;
+}
+
+#properties h3 {
+  margin-top: 0;
+}
+
+.section {
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+input {
+  width: 100%;
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #444;
+  background: #111;
+  color: #fff;
+}
+
+/* ===== ELEMENTS ===== */
 .element {
   position: absolute;
   cursor: move;
@@ -41,11 +111,55 @@ body {
 }
 
 .text {
-  background: #eef;
+  background: transparent;
   padding: 6px;
+  color: #000;
 }
 
-/* Selected Element */
+/* ===== SELECTION ===== */
 .selected {
-  outline: 2px solid blue;
+  outline: 2px solid #4aa9ff;
+}
+
+/* ===== RESIZE HANDLES ===== */
+.resize-handle {
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 1px solid #4aa9ff;
+  position: absolute;
+}
+
+.resize-handle.tl {
+  top: -5px;
+  left: -5px;
+  cursor: nwse-resize;
+}
+.resize-handle.tr {
+  top: -5px;
+  right: -5px;
+  cursor: nesw-resize;
+}
+.resize-handle.bl {
+  bottom: -5px;
+  left: -5px;
+  cursor: nesw-resize;
+}
+.resize-handle.br {
+  bottom: -5px;
+  right: -5px;
+  cursor: nwse-resize;
+}
+
+/* ===== ROTATE HANDLE ===== */
+.rotate-handle {
+  width: 12px;
+  height: 12px;
+  background: #f5c400;
+  border-radius: 50%;
+  position: absolute;
+  top: -26px;
+  left: 50%;
+  transform: translateX(-50%);
+  cursor: grab;
 }

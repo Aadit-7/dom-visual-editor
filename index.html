@@ -2,19 +2,65 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>DOM Design Tool - Day 1</title>
+    <title>DOM Design Tool</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- Toolbar -->
-    <div id="toolbar">
-      <button id="add-rect">Add Rectangle</button>
-      <button id="add-text">Add Text</button>
-    </div>
+    <div id="app">
 
-    <!-- Editor -->
-    <div id="editor">
-      <div id="canvas"></div>
+      <!-- LEFT PANEL -->
+      <aside id="layers-panel">
+        <h3>Layers</h3>
+
+        <button id="add-rect" class="primary-btn">➕ Add Rectangle</button>
+        <button id="add-text" class="secondary-btn">✎ Add Text</button>
+
+        <div class="layers-list">
+          <!-- future: layers list -->
+        </div>
+      </aside>
+
+      <!-- CANVAS -->
+      <main id="editor">
+        <div id="canvas"></div>
+      </main>
+
+      <!-- RIGHT PANEL -->
+      <aside id="properties">
+        <h3>Properties</h3>
+
+        <div class="section">
+          <label>
+            Width
+            <input type="number" id="prop-width" />
+          </label>
+
+          <label>
+            Height
+            <input type="number" id="prop-height" />
+          </label>
+        </div>
+
+        <div class="section">
+          <label>
+            Background
+            <input type="color" id="prop-bg" />
+          </label>
+        </div>
+
+        <div class="section" id="text-prop">
+          <label>
+            Text
+            <input type="text" id="prop-text" />
+          </label>
+
+          <label id="text-color-prop">
+            Text Color
+            <input type="color" id="prop-text-color" />
+          </label>
+        </div>
+      </aside>
+
     </div>
 
     <script src="script.js"></script>
