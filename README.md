@@ -46,9 +46,7 @@ A DOM-based design editor that allows users to create and manipulate rectangles 
 - Vanilla JavaScript (DOM API)
 
 ## How to Run
-
-1. Open `index.html` in a browser
-2. No server or build step required
+https://dom-visual-editor.vercel.app/
 
 ## Notes
 
