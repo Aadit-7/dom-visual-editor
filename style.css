@@ -1,3 +1,61 @@
+@font-face {
+  font-family: light;
+  src: url(./fonts/RobotoCondensed-Light.ttf);
+}
+@font-face {
+  font-family: bold;
+  src: url(./fonts/RobotoCondensed-ExtraBold.ttf);
+}
+@font-face {
+  font-family: italic;
+  src: url(./fonts/RobotoCondensed-ThinItalic.ttf);
+}
+
+/* ================= ROOT VARIABLES ================= */
+:root {
+  /* Background Colors */
+  --bg-main: #111;
+  --bg-panel: #1c1c1c;
+  --bg-canvas: #141414;
+  --bg-grid-dot: #2a2a2a;
+
+  /* Border Colors */
+  --border-subtle: #333;
+  --border-input: #444;
+
+  /* Text Colors */
+  --text-main: #eee;
+  --text-muted: #aaa;
+  --accent-primary: #f5c400;
+  --accent-blue: #4aa9ff;
+  --rect-default: #cce;
+  --text-default: #000;
+
+  /* Button Colors */
+  --btn-secondary: #2b2b2b;
+
+  /* Border Radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 6px;
+  --spacing-md: 8px;
+  --spacing-lg: 10px;
+  --spacing-xl: 12px;
+  --spacing-2xl: 15px;
+
+  /* Font Sizes */
+  --font-size-sm: 14px;
+  --font-size-md: 17px;
+  --font-size-lg: 20px;
+  --font-size-xl: 25px;
+}
+
+/* ================= GLOBAL ================= */
 * {
   box-sizing: border-box;
   user-select: none;
@@ -5,55 +63,143 @@
 
 body {
   margin: 0;
-  font-family: Inter, Arial, sans-serif;
-  background: #111;
-  color: #eee;
+  font-family: bold;
+  background: var(--bg-main);
+  color: var(--text-main);
 }
 
-/* ===== APP LAYOUT ===== */
+/* ================= APP LAYOUT ================= */
 #app {
   display: flex;
   height: 100vh;
+  overflow: hidden;
 }
 
-/* ===== LEFT PANEL ===== */
+/* ================= LEFT PANEL ================= */
 #layers-panel {
-  width: 240px;
-  background: #1c1c1c;
-  padding: 15px;
-  border-right: 1px solid #333;
+  width: clamp(180px, 20vw, 240px);
+  background: var(--bg-panel);
+  padding: var(--spacing-2xl);
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
 }
 
-#layers-panel h3 {
-  margin-top: 0;
-  margin-bottom: 15px;
+#layers-panel,
+#properties {
+  max-height: 100vh;
 }
 
 .primary-btn,
 .secondary-btn {
   width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 6px;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  border-radius: var(--radius-md);
   border: none;
   cursor: pointer;
-  font-size: 14px;
+  font-size: var(--font-size-md);
 }
 
 .primary-btn {
-  background: #f5c400;
+  background: var(--accent-primary);
   color: #000;
 }
 
 .secondary-btn {
-  background: #2b2b2b;
-  color: #fff;
+  background: var(--btn-secondary);
+  color: var(--text-main);
 }
 
-/* ===== CANVAS AREA ===== */
+/* 🔥 Button interactions */
+.primary-btn:hover {
+  background: #ffd84d;
+}
+
+.secondary-btn:hover,
+button:hover {
+  background: #3a3a3a;
+}
+
+button:active,
+.primary-btn:active,
+.secondary-btn:active {
+  transform: scale(0.97);
+}
+
+/* ================= PANEL STRUCTURE ================= */
+.panel-header {
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--spacing-xl);
+  font-size: var(--font-size-xl);
+}
+
+.panel-section {
+  margin-bottom: var(--spacing-2xl);
+}
+.panel-section #save-project,
+#load-project,
+#export-json,
+#export-html {
+  width: 100%;
+  font-size: var(--font-size-md);
+  margin-bottom: var(--spacing-2xl);
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--btn-secondary);
+  color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.panel-section #save-project:hover,
+#load-project:hover,
+#export-json:hover,
+#export-html:hover {
+  background: #373737;
+}
+.panel-divider {
+  height: 1px;
+  background: var(--border-subtle);
+  margin: var(--spacing-xl) 0;
+}
+
+.layers-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-md);
+
+  margin-bottom: var(--spacing-md);
+}
+
+/* ================= LAYERS LIST ================= */
+#layers-list {
+  margin-top: var(--spacing-sm);
+}
+
+.layer-item {
+  padding: var(--spacing-md);
+  background: var(--bg-grid-dot);
+  margin-bottom: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.layer-item:hover {
+  background: #3a3a3a;
+}
+
+.layer-item.active {
+  background: var(--accent-primary);
+  color: #000;
+  font-weight: 600;
+}
+
+/* ================= CANVAS ================= */
 #editor {
   flex: 1;
-  background: #141414;
+  background: var(--bg-canvas);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -62,100 +208,146 @@ body {
 #canvas {
   width: 90%;
   height: 90%;
-  background: radial-gradient(#2a2a2a 1px, transparent 1px);
+  background: radial-gradient(var(--bg-grid-dot) 1px, transparent 1px);
   background-size: 20px 20px;
   position: relative;
   border-radius: 8px;
   overflow: hidden;
 }
 
-/* ===== RIGHT PANEL ===== */
+#canvas {
+  min-width: 300px;
+  min-height: 300px;
+}
+
+/* ================= RIGHT PANEL ================= */
 #properties {
-  width: 260px;
-  background: #1c1c1c;
-  padding: 15px;
-  border-left: 1px solid #333;
+  width: clamp(200px, 22vw, 260px);
+  background: var(--bg-panel);
+  padding: var(--spacing-2xl);
+  border-left: 1px solid var(--border-subtle);
+  overflow-y: auto;
 }
 
-#properties h3 {
-  margin-top: 0;
+h4 {
+  margin: 0 0 var(--spacing-md);
+  font-size: var(--font-size-md);
+  text-transform: uppercase;
+  color: var(--text-muted);
 }
 
-.section {
-  margin-bottom: 15px;
+.inline-inputs {
+  display: flex;
+  gap: 10px;
+}
+
+.inline-inputs label {
+  flex: 1;
+  font-size: var(--font-size-sm);
+  margin-top: var(--spacing-sm);
 }
 
 label {
   display: block;
-  margin-bottom: 10px;
-  font-size: 13px;
+  margin-bottom: var(--spacing-2xl);
+  font-size: var(--font-size-md);
 }
 
 input {
   width: 100%;
-  padding: 6px;
-  border-radius: 4px;
-  border: 1px solid #444;
-  background: #111;
-  color: #fff;
+  padding: var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-input);
+  background: var(--bg-main);
+  color: var(--text-main);
+  /* background-color: #fff; */
 }
 
-/* ===== ELEMENTS ===== */
+input:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+}
+
+button {
+  width: 100%;
+  padding: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+  border-radius: var(--radius-sm);
+  border: none;
+  background: var(--btn-secondary);
+  color: var(--text-main);
+  cursor: pointer;
+}
+
+/* ================= ELEMENTS ================= */
 .element {
   position: absolute;
   cursor: move;
 }
 
+.element:hover {
+  outline: 1px dashed rgba(255, 255, 255, 0.25);
+}
+
 .rectangle {
-  background: #cce;
+  background: var(--rect-default);
 }
 
 .text {
-  background: transparent;
-  padding: 6px;
-  color: #000;
+  /* overflow: hidden; */
+  padding: var(--spacing-sm);
+  background: var(--rect-default);
 }
 
-/* ===== SELECTION ===== */
+.text-content {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: var(--font-size-sm);
+}
+
+/* ================= SELECTION ================= */
 .selected {
-  outline: 2px solid #4aa9ff;
+  outline: 2px solid var(--accent-blue);
 }
 
-/* ===== RESIZE HANDLES ===== */
+/* ================= RESIZE HANDLES ================= */
 .resize-handle {
   width: 10px;
   height: 10px;
   background: #fff;
-  border: 1px solid #4aa9ff;
+  border: 1px solid var(--accent-blue);
   position: absolute;
+}
+
+.resize-handle:hover {
+  background: var(--accent-blue);
 }
 
 .resize-handle.tl {
   top: -5px;
   left: -5px;
-  cursor: nwse-resize;
 }
 .resize-handle.tr {
   top: -5px;
   right: -5px;
-  cursor: nesw-resize;
 }
 .resize-handle.bl {
   bottom: -5px;
   left: -5px;
-  cursor: nesw-resize;
 }
 .resize-handle.br {
   bottom: -5px;
   right: -5px;
-  cursor: nwse-resize;
 }
 
-/* ===== ROTATE HANDLE ===== */
+/* ================= ROTATE HANDLE ================= */
 .rotate-handle {
   width: 12px;
   height: 12px;
-  background: #f5c400;
+  background: var(--accent-primary);
   border-radius: 50%;
   position: absolute;
   top: -26px;
@@ -163,3 +355,9 @@ input {
   transform: translateX(-50%);
   cursor: grab;
 }
+
+.rotate-handle:hover {
+  transform: translateX(-50%) scale(1.1);
+}
+
+

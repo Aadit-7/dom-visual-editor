@@ -7,16 +7,26 @@
   </head>
   <body>
     <div id="app">
-
       <!-- LEFT PANEL -->
       <aside id="layers-panel">
-        <h3>Layers</h3>
+        <div class="panel-header">
+          <h3>Layers</h3>
+        </div>
 
-        <button id="add-rect" class="primary-btn">➕ Add Rectangle</button>
-        <button id="add-text" class="secondary-btn">✎ Add Text</button>
+        <div class="panel-section">
+          <button id="add-rect" class="primary-btn">⬛ Add Rectangle</button>
+          <button id="add-text" class="secondary-btn">T Add Text</button>
+        </div>
 
-        <div class="layers-list">
-          <!-- future: layers list -->
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <div class="layers-title">
+            <span>Layers</span>
+          </div>
+
+          <!-- IMPORTANT: ID kept for JS -->
+          <div id="layers-list"></div>
         </div>
       </aside>
 
@@ -27,28 +37,27 @@
 
       <!-- RIGHT PANEL -->
       <aside id="properties">
-        <h3>Properties</h3>
-
-        <div class="section">
-          <label>
-            Width
-            <input type="number" id="prop-width" />
-          </label>
-
-          <label>
-            Height
-            <input type="number" id="prop-height" />
-          </label>
+        <div class="panel-header">
+          <h3>Properties</h3>
         </div>
 
-        <div class="section">
+        <div class="panel-section">
+          <h4>Size</h4>
+          <div class="inline-inputs">
+            <label>W <input type="number" id="prop-width" /></label>
+            <label>H <input type="number" id="prop-height" /></label>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <h4>Appearance</h4>
           <label>
-            Background
+            Color
             <input type="color" id="prop-bg" />
           </label>
         </div>
 
-        <div class="section" id="text-prop">
+        <div class="panel-section" id="text-prop">
           <label>
             Text
             <input type="text" id="prop-text" />
@@ -59,8 +68,16 @@
             <input type="color" id="prop-text-color" />
           </label>
         </div>
-      </aside>
 
+        <div class="panel-divider"></div>
+
+        <div class="panel-section">
+          <button id="save-project">Save</button>
+          <button id="load-project">Load</button>
+          <button id="export-json">Export JSON</button>
+          <button id="export-html">Export HTML</button>
+        </div>
+      </aside>
     </div>
 
     <script src="script.js"></script>

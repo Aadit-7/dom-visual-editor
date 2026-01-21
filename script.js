@@ -11,11 +11,19 @@ const propTextColor = document.getElementById("prop-text-color");
 const textProp = document.getElementById("text-prop");
 const textColorProp = document.getElementById("text-color-prop");
 
+const saveBtn = document.getElementById("save-project");
+const loadBtn = document.getElementById("load-project");
+
+const exportJsonBtn = document.getElementById("export-json");
+const exportHtmlBtn = document.getElementById("export-html");
+
+const layersList = document.getElementById("layers-list");
+
 /* ------------------ LIMITS ------------------ */
 const MIN_WIDTH = 30;
-const MAX_WIDTH = 600;
+const MAX_WIDTH = 800;
 const MIN_HEIGHT = 30;
-const MAX_HEIGHT = 600;
+const MAX_HEIGHT = 700;
 
 /* ------------------ CENTRAL STATE ------------------ */
 const state = {
@@ -50,6 +58,7 @@ function createElement(type) {
   state.elements.push(data);
   renderElement(data);
   selectElement(id);
+  renderLayers();
 }
 
 /* ------------------ RENDER ------------------ */
@@ -57,11 +66,15 @@ function renderElement(data) {
   const el = document.createElement("div");
   el.classList.add("element");
 
-  if (data.type === "rect") el.classList.add("rectangle");
   if (data.type === "text") {
     el.classList.add("text");
-    el.textContent = data.text;
-    el.style.color = data.styles.color;
+
+    const textNode = document.createElement("div");
+    textNode.className = "text-content";
+    textNode.textContent = data.text;
+    textNode.style.color = data.styles.color;
+
+    el.appendChild(textNode);
   }
 
   el.dataset.id = data.id;
@@ -105,6 +118,7 @@ function selectElement(id) {
     selectedEl.classList.add("selected");
     addHandles(selectedEl);
   }
+  renderLayers();
 }
 
 /* ------------------ HANDLES ------------------ */
@@ -139,12 +153,17 @@ function removeHandles(el) {
 }
 
 /* ------------------ DESELECT ------------------ */
-canvas.addEventListener("mousedown", () => {
+canvas.addEventListener("mousedown", (e) => {
+  // 🔑 Only deselect if user clicked empty canvas
+  if (e.target !== canvas) return;
+
   state.selectedId = null;
+
   document.querySelectorAll(".element").forEach((el) => {
     el.classList.remove("selected");
     removeHandles(el);
   });
+  renderLayers();
 });
 
 /* ------------------ DRAG ------------------ */
@@ -320,6 +339,7 @@ document.addEventListener("keydown", (e) => {
       el.remove();
       state.elements = state.elements.filter((i) => i.id !== state.selectedId);
       state.selectedId = null;
+      renderLayers();
       return;
     case "ArrowUp":
       data.y = Math.max(0, data.y - step);
@@ -407,16 +427,149 @@ propText.addEventListener("input", () => {
   const data = state.elements.find((el) => el.id === state.selectedId);
   if (!data || data.type !== "text") return;
 
-  data.text = propText.value;
-  document.querySelector(`.element[data-id="${data.id}"]`).textContent =
-    data.text;
+  const el = document.querySelector(`.element[data-id="${data.id}"]`);
+  const textNode = el.querySelector(".text-content");
+  if (textNode) textNode.textContent = data.text;
 });
 
-propTextColor.addEventListener("input", () => {
+propText.addEventListener("input", () => {
   const data = state.elements.find((el) => el.id === state.selectedId);
   if (!data || data.type !== "text") return;
 
-  data.styles.color = propTextColor.value;
-  document.querySelector(`.element[data-id="${data.id}"]`).style.color =
-    data.styles.color;
+  data.text = propText.value;
+
+  const el = document.querySelector(`.element[data-id="${data.id}"]`);
+  const textNode = el.querySelector(".text-content");
+
+  if (textNode) {
+    textNode.textContent = data.text;
+  }
 });
+
+saveBtn.addEventListener("click", () => {
+  const dataToSave = {
+    elements: state.elements,
+    idCounter,
+  };
+
+  localStorage.setItem("dom-editor-project", JSON.stringify(dataToSave));
+  alert("Project saved successfully!");
+});
+
+function loadProject() {
+  const saved = localStorage.getItem("dom-editor-project");
+  if (!saved) return;
+
+  const parsed = JSON.parse(saved);
+
+  state.elements = parsed.elements || [];
+  idCounter = parsed.idCounter || 1;
+  state.selectedId = null;
+
+  canvas.innerHTML = "";
+
+  state.elements.forEach((el) => {
+    renderElement(el);
+  });
+
+  renderLayers();
+}
+loadBtn.addEventListener("click", loadProject);
+
+// Auto-load on page refresh
+window.addEventListener("load", loadProject);
+
+exportJsonBtn.addEventListener("click", () => {
+  const json = JSON.stringify(state.elements, null, 2);
+
+  const blob = new Blob([json], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "design.json";
+  a.click();
+
+  URL.revokeObjectURL(url);
+});
+
+exportHtmlBtn.addEventListener("click", () => {
+  let html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Exported Design</title>
+  <style>
+    body { margin: 0; }
+    .canvas {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: #f9f9f9;
+    }
+    .element {
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+  <div class="canvas">
+`;
+
+  state.elements.forEach((el) => {
+    html += `
+    <div class="element"
+      style="
+        left:${el.x}px;
+        top:${el.y}px;
+        width:${el.width}px;
+        height:${el.height}px;
+        background:${el.styles.backgroundColor};
+        color:${el.styles.color};
+        transform: rotate(${el.rotation}deg);
+      ">
+      ${el.type === "text" ? el.text : ""}
+    </div>
+`;
+  });
+
+  html += `
+  </div>
+</body>
+</html>
+`;
+
+  const blob = new Blob([html], { type: "text/html" });
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "design.html";
+  a.click();
+
+  URL.revokeObjectURL(url);
+});
+
+/* ------------------ LAYERS PANEL ------------------ */
+function renderLayers() {
+  layersList.innerHTML = "";
+
+  // Show top-most element first
+  [...state.elements].reverse().forEach((el) => {
+    const layer = document.createElement("div");
+    layer.className = "layer-item";
+
+    layer.textContent = el.type === "rect" ? "Rectangle" : "Text";
+
+    if (el.id === state.selectedId) {
+      layer.classList.add("active");
+    }
+
+    layer.addEventListener("click", () => {
+      selectElement(el.id);
+    });
+
+    layersList.appendChild(layer);
+  });
+}
